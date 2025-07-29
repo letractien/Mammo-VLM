@@ -1,0 +1,4 @@
+kagglehub
+pandas
+scikit-image
+qwen-vl-utils
