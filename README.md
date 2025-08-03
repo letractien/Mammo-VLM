@@ -17,3 +17,6 @@ mv /root/.cache/kagglehub/datasets/shantanughosh/vindr-mammogram-dataset-dicom-t
 # Install torch
 pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu118
 pip install torch==2.2.0+cu118 torchvision==0.17.0+cu118 torchaudio==2.2.0+cu118 -f https://download.pytorch.org/whl/cu118/torch_stable.html
+
+# Predict from Qwen
+/root/letractien/Mammo-VLM/out/detect_qwen/0f0551f4edb5494b0d8765c23fe421ae/a37e508fc994c1c7a846ec23edfb400f_bbox.png

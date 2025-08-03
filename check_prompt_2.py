@@ -1,24 +1,3 @@
-import dataset
-
-import os
-import preprocess
-import numpy as np
-
-import pydicom
-import matplotlib.pyplot as plt
-from PIL import Image, ImageDraw, ImageFont
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers.generation import GenerationConfig
-
-import torch
-torch.manual_seed(1234)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-CACHE_DIR = "/root/letractien/Mammo-VLM/.cache"
-
-tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-VL-Chat", trust_remote_code=True, cache_dir=CACHE_DIR)
-model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-VL-Chat", device_map=device, trust_remote_code=True, cache_dir=CACHE_DIR).eval()
-model.generation_config = GenerationConfig.from_pretrained("Qwen/Qwen-VL-Chat", trust_remote_code=True, cache_dir=CACHE_DIR)
-
 def generate_mammogram_description(
     laterality,
     view_position,
@@ -86,50 +65,18 @@ def generate_mammogram_description(
     description = f"""该乳腺X线图像为{side_text}乳房（Laterality: {laterality}），拍摄视角为 {view_position}（{view_text}）。乳腺密度：{breast_density} – {density_description} 总体 BI-RADS 等级：{breast_birads} – {breast_birads_desc} 检测到的病变类型：{finding_cat} – {category_description} 病变 BI-RADS 等级：{finding_birads} – {finding_birads_desc} 图像尺寸：{width} × {height} 像素。病变框选区域 <ref>病变位置</ref><box>({xmin},{ymin}),({xmax},{ymax})</box>。"""
     return description
 
-image_annotation_tuples = dataset.load_image_annotation_tuples()
-save_dir = "out/detect_qwen"
-os.makedirs(save_dir, exist_ok=True)
 
-for idx, (img_path, annotation) in enumerate(image_annotation_tuples):
-
-    folder = annotation['study_id']
-    os.makedirs(os.path.join(save_dir, folder), exist_ok=True)
-
-    basename = annotation['image_id']
-    img_png_path = os.path.join(save_dir, folder, f"{basename}.png")
-
-    ds = pydicom.dcmread(img_path)
-    plt.imsave(img_png_path, ds.pixel_array, cmap="gray")
-
-    query = tokenizer.from_list_format([
-        {'image': img_png_path},
-        {'text': '请严格框出图像中细小的、圆形的、疑似肿块或钙化灶区域（例如：输出图像中小圆点的检测框），以便于后续诊断分析。'}
-    ])
-
-    history = [(
-        f'Picture 1: <img>{img_png_path}</img>\n这是什么?', 
-        generate_mammogram_description(
-            laterality=annotation['laterality'],
-            view_position=annotation['view_position'],
-            breast_density=annotation['breast_density'],
-            breast_birads=annotation['breast_birads'],
-            finding_categories=annotation['finding_categories'],
-            finding_birads=annotation['finding_birads'],
-            width=annotation['width'],
-            height=annotation['height'],
-            xmin=annotation['xmin'],
-            ymin=annotation['ymin'],
-            xmax=annotation['xmax'],
-            ymax=annotation['ymax'],
-        )
-    )]
-
-    response, history = model.chat(tokenizer, query=query, history=history)
-    print("Response:", response)
-    print("History:", history)
-
-    image = tokenizer.draw_bbox_on_latest_picture(response, history)
-    if image:
-        image.save(os.path.join(save_dir, folder, f"{basename}_bbox.png"))
-    else:
-        print("No bbox")
+print(generate_mammogram_description(
+    laterality="L",
+    view_position="CC",
+    breast_density="DENSITY C",
+    breast_birads="BI-RADS 3",
+    finding_categories=["Mass"],
+    finding_birads="BI-RADS 4",
+    width=2800,
+    height=3500,
+    xmin=400,
+    ymin=1500,
+    xmax=800,
+    ymax=2000
+))

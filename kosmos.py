@@ -11,9 +11,10 @@ from transformers import AutoProcessor, AutoModelForImageTextToText
 import torch
 torch.manual_seed(1234)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+CACHE_DIR = "/root/letractien/Mammo-VLM/.cache"
 
-model = AutoModelForImageTextToText.from_pretrained("microsoft/kosmos-2-patch14-224", device_map=device)
-processor = AutoProcessor.from_pretrained("microsoft/kosmos-2-patch14-224", use_fast=True)
+model = AutoModelForImageTextToText.from_pretrained("microsoft/kosmos-2-patch14-224", device_map=device, cache_dir=CACHE_DIR)
+processor = AutoProcessor.from_pretrained("microsoft/kosmos-2-patch14-224", use_fast=True, cache_dir=CACHE_DIR)
 
 image_annotation_tuples = dataset.load_image_annotation_tuples()
 img_path, annotation = image_annotation_tuples[0]
