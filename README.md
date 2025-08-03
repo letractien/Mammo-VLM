@@ -4,7 +4,11 @@ Project about mammography
 # Activate enviroment
 conda activate .venv-mammography
 
+# Deactivate enviroment
+conda deactivate
+
 # Setup GPU
+export CUDA_VISIBLE_DEVICES=0
 export CUDA_VISIBLE_DEVICES=1
 
 # Move to folder

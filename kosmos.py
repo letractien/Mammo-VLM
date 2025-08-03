@@ -1,15 +1,18 @@
 import dataset
-import generate_prompt
 
 import os
-import requests
 import preprocess
 import numpy as np
 
+import torch
 from PIL import Image, ImageDraw, ImageFont
-from transformers import AutoProcessor, Kosmos2ForConditionalGeneration
+from transformers import AutoProcessor, AutoModelForImageTextToText
 
-model = Kosmos2ForConditionalGeneration.from_pretrained("microsoft/kosmos-2-patch14-224")
+import torch
+torch.manual_seed(1234)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+model = AutoModelForImageTextToText.from_pretrained("microsoft/kosmos-2-patch14-224", device_map=device)
 processor = AutoProcessor.from_pretrained("microsoft/kosmos-2-patch14-224", use_fast=True)
 
 image_annotation_tuples = dataset.load_image_annotation_tuples()
@@ -43,9 +46,21 @@ mammogram_stack = np.stack([minmax_normalized, trunc_normalized, cl2], axis=2)
 mammogram_stack_disp = preprocess.normalize_for_display(mammogram_stack)
 
 image_stack = Image.fromarray(mammogram_stack_disp)
-prompt = generate_prompt.prompt_kosmos(annotation)
 
-inputs = processor(text=prompt, images=image, return_tensors="pt")
+labels = annotation["finding_categories"]
+height = annotation["height"]
+width = annotation["width"]
+xmin_norm = annotation["xmin"] / width
+xmax_norm = annotation["xmax"] / width
+ymin_norm = annotation["ymin"] / height
+ymax_norm = annotation["xmax"] / height
+
+prompt = (
+    f"<grounding> {labels} at (xmin={xmin_norm:.2f}, ymin={ymin_norm:.2f}, "
+    f"xmax={xmax_norm:.2f}, ymax={ymax_norm:.2f})."
+)
+
+inputs = processor(text=prompt, images=image, return_tensors="pt").to(device)
 generated_ids = model.generate(
     pixel_values=inputs["pixel_values"],
     input_ids=inputs["input_ids"],
@@ -53,7 +68,7 @@ generated_ids = model.generate(
     image_embeds=None,
     image_embeds_position_mask=inputs["image_embeds_position_mask"],
     use_cache=True,
-    max_new_tokens=128,
+    max_new_tokens=64,
 )
 
 # Generate
