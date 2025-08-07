@@ -28,7 +28,7 @@ for idx, folder in enumerate(folder_list):
         save_path = os.path.join(save_folder, f"{image_id}.dicom")
 
         if os.path.exists(save_path):
-            print(f"Đã tồn tại: {save_path}")
+            print(f"Existed: {save_path}")
             continue
 
         response = requests.get(url, stream=True, cookies=cookies)
@@ -38,6 +38,6 @@ for idx, folder in enumerate(folder_list):
                     f.write(chunk)
 
             cnt = cnt + 1
-            print(f"✅ Tải thành công {cnt}: {save_path}")
+            print(f"Successed {cnt}: {save_path}")
         else:
-            print(f"❌ Lỗi tải {url}: {response.status_code}")
+            print(f"Failed {url}: {response.status_code}")

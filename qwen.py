@@ -33,10 +33,10 @@ def generate_mammogram_description(
     xmax,
     ymax
 ):
-    xmin = int(xmin / width * 1000)
-    ymin = int(ymin / height * 1000)
-    xmax = int(xmax / width * 1000)
-    ymax = int(ymax / height * 1000)
+    xmin = max(int(xmin / width * 1000) - 20, 0)
+    ymin = max(int(ymin / height * 1000) - 20, 0)
+    xmax = min(int(xmax / width * 1000) + 20, 1000)
+    ymax = min(int(ymax / height * 1000) + 20, 1000)
 
     density_descriptions = {
         "DENSITY A": "乳房几乎完全由脂肪组织组成。",
@@ -89,6 +89,7 @@ def generate_mammogram_description(
 image_annotation_tuples = dataset.load_image_annotation_tuples()
 save_dir = "out/detect_qwen"
 os.makedirs(save_dir, exist_ok=True)
+log_path = os.path.join(save_dir, "log.txt")
 
 for idx, (img_path, annotation) in enumerate(image_annotation_tuples):
 
@@ -125,8 +126,10 @@ for idx, (img_path, annotation) in enumerate(image_annotation_tuples):
     )]
 
     response, history = model.chat(tokenizer, query=query, history=history)
-    print("Response:", response)
-    print("History:", history)
+    with open(log_path, "a", encoding="utf-8") as f:
+        f.write(f"Response {idx}: {response}\n")
+        f.write(f"History {idx}: {history}\n")
+        f.write("\n")
 
     image = tokenizer.draw_bbox_on_latest_picture(response, history)
     if image:

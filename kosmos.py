@@ -22,13 +22,11 @@ img_path, annotation = image_annotation_tuples[0]
 image = Image.open(img_path)
 image_arr = np.array(image)
 
-# Ép kiểu int
 ymin = int(annotation["ymin"])
 ymax = int(annotation["ymax"])
 xmin = int(annotation["xmin"])
 xmax = int(annotation["xmax"])
 
-# Tạo mask 2D (dùng nếu chỉ cần mặt nạ vùng bbox)
 bbox_arr = np.zeros(image_arr.shape[:2], dtype=np.uint8)
 bbox_arr[ymin:ymax+1, xmin:xmax+1] = 1
 
@@ -94,16 +92,11 @@ for label, _, boxes in entities:
         x_max = int(box[2] * width)
         y_max = int(box[3] * height)
 
-        # Vẽ hình chữ nhật
         draw.rectangle([(x_min, y_min), (x_max, y_max)], outline="red", width=1)
-
-        # Vẽ label (không cần font nếu đơn giản)
         draw.text((x_min, max(y_min - 10, 0)), label, fill="red")
 
-# Lưu ảnh ra file
 save_dir = "out/detect_kosmos"
 os.makedirs(save_dir, exist_ok=True)
 
-# Tạo tên ảnh dựa trên tên file gốc
 basename = os.path.splitext(os.path.basename(img_path))[0]
 image_draw.save(os.path.join(save_dir, f"{basename}_bbox.png"))
