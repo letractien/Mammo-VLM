@@ -143,15 +143,21 @@ def wavelet_enhancement(data, wavelet='db8', level=1):
 
 def draw_bbox_grayscale(img: np.ndarray, bbox: dict, color: float = 255.0, thickness: int = 3) -> np.ndarray:
     img_with_bbox = img.copy()
-    ymin = int(bbox["ymin"])
-    ymax = int(bbox["ymax"])
-    xmin = int(bbox["xmin"])
-    xmax = int(bbox["xmax"])
+    h, w = img_with_bbox.shape[:2]
+
+    ymin = max(0, min(int(bbox["ymin"]), h - 1))
+    ymax = max(0, min(int(bbox["ymax"]), h - 1))
+    xmin = max(0, min(int(bbox["xmin"]), w - 1))
+    xmax = max(0, min(int(bbox["xmax"]), w - 1))
 
     for t in range(thickness):
-        img_with_bbox[ymin + t, xmin:xmax] = color
-        img_with_bbox[ymax - t, xmin:xmax] = color
-        img_with_bbox[ymin:ymax, xmin + t] = color
-        img_with_bbox[ymin:ymax, xmax - t] = color
+        if ymin + t < h:
+            img_with_bbox[ymin + t, xmin:xmax] = color
+        if ymax - t >= 0:
+            img_with_bbox[ymax - t, xmin:xmax] = color
+        if xmin + t < w:
+            img_with_bbox[ymin:ymax, xmin + t] = color
+        if xmax - t >= 0 and xmax - t < w:
+            img_with_bbox[ymin:ymax, xmax - t] = color
 
     return img_with_bbox

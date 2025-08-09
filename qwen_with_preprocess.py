@@ -39,7 +39,8 @@ for idx, (img_path, annotation) in enumerate(image_annotation_tuples):
     ds = pydicom.dcmread(img_path)
     # plt.imsave(img_png_path, ds.pixel_array, cmap="gray")
 
-    img_arr = ds.pixel_array.astype(np.float32)
+    try: img_arr = ds.pixel_array.astype(np.float32)
+    except Exception as e: continue 
     # img_with_bbox = preprocess.draw_bbox_grayscale(img_arr, annotation, color=255, thickness=5)
 
     x, m, new_annotation = preprocess.crop(img_arr, annotation=annotation)
@@ -57,6 +58,7 @@ for idx, (img_path, annotation) in enumerate(image_annotation_tuples):
 
     # img_png_path_pre = os.path.join(save_dir, folder, f"{basename}_preprocessed.png")
     img_png_path_pre = os.path.join(save_dir, f"{basename}_preprocessed.png")
+    if os.path.exists(img_png_path_pre): continue
     Image.fromarray(disp).save(img_png_path_pre)
 
     history = [(
@@ -79,7 +81,7 @@ for idx, (img_path, annotation) in enumerate(image_annotation_tuples):
 
     query = tokenizer.from_list_format([
         {'image': img_png_path_pre},
-        {'text': prompt.generate_request_description}
+        {'text': prompt.generate_request_description()}
     ])
 
     response, history = model.chat(tokenizer, query=query, history=history)
