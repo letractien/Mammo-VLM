@@ -79,7 +79,7 @@ for idx, (img_path, annotation) in enumerate(image_annotation_tuples):
 
     query = tokenizer.from_list_format([
         {'image': img_png_path_pre},
-        {'text': '请依照前述描述，严格标注并框选图像中所有细小、圆形的可疑肿块（Mass）或可疑钙化灶（Suspicious Calcification）区域，输出对应的检测框坐标，以便后续诊断分析。'}
+        {'text': prompt.generate_request_description}
     ])
 
     response, history = model.chat(tokenizer, query=query, history=history)

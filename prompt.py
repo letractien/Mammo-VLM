@@ -65,3 +65,6 @@ def generate_mammogram_description(
     category_description = category_descriptions.get(finding_cat, "未识别的病变类型。")
     description = f"""该乳腺X线图像为{side_text}乳房（Laterality: {laterality}），拍摄视角为 {view_position}（{view_text}）。乳腺密度：{breast_density} – {density_description} 总体 BI-RADS 等级：{breast_birads} – {breast_birads_desc} 检测到的病变类型：{finding_cat} – {category_description} 病变 BI-RADS 等级：{finding_birads} – {finding_birads_desc} 图像尺寸：{width} × {height} 像素。病变框选区域 <ref>病变位置</ref><box>({xmin},{ymin}),({xmax},{ymax})</box>。"""
     return description
+
+def generate_request_description():
+    return """请依照前述描述，严格标注并框选图像中所有细小、圆形的可疑肿块（Mass）或可疑钙化灶（Suspicious Calcification）区域，输出对应的检测框坐标，以便后续诊断分析。"""
