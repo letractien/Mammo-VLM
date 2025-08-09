@@ -40,8 +40,7 @@ for idx, (img_path, annotation) in enumerate(image_annotation_tuples):
     Image.fromarray(trunc_disp).save(os.path.join(save_dir, folder, f"{basename}_trunc.png"))
     Image.fromarray(cl2_disp).save(os.path.join(save_dir, folder, f"{basename}_clahe.png"))
 
-    mammogram_stack = np.stack([minmax_normalized, trunc_normalized, cl2], axis=2)
-    mammogram_stack_disp = preprocess.normalize_for_display(mammogram_stack)
-    Image.fromarray(mammogram_stack_disp).save(os.path.join(save_dir, folder, f"{basename}_stack.png"))
-
-    break
+    # mammogram_stack = np.stack([minmax_normalized, trunc_normalized, cl2], axis=2)
+    # mammogram_stack_disp = preprocess.normalize_for_display(mammogram_stack)
+    # Image.fromarray(mammogram_stack_disp).save(os.path.join(save_dir, folder, f"{basename}_stack.png"))
+    # break

@@ -6,7 +6,21 @@ from skimage.morphology import disk, white_tophat, black_tophat
 from skimage.restoration import denoise_nl_means, estimate_sigma
 from skimage import exposure
 
-def crop(data, mask=None):
+# def crop(data, mask=None):
+#     img_blurred = gaussian(data, sigma=10)
+#     thresh = threshold_otsu(img_blurred)
+#     breast_mask = (img_blurred > thresh).astype(np.uint8)
+#     labeled_img = label(breast_mask)
+#     regions = regionprops(labeled_img)
+#     largest_region = max(regions, key=lambda x: x.area)
+#     minr, minc, maxr, maxc = largest_region.bbox
+    
+#     if mask is None: 
+#         return data[minr:maxr, minc:maxc], breast_mask[minr:maxr, minc:maxc]
+#     else:
+#         return data[minr:maxr, minc:maxc], breast_mask[minr:maxr, minc:maxc], mask[minr:maxr, minc:maxc]
+
+def crop(data, mask=None, annotation=None):
     img_blurred = gaussian(data, sigma=10)
     thresh = threshold_otsu(img_blurred)
     breast_mask = (img_blurred > thresh).astype(np.uint8)
@@ -14,11 +28,39 @@ def crop(data, mask=None):
     regions = regionprops(labeled_img)
     largest_region = max(regions, key=lambda x: x.area)
     minr, minc, maxr, maxc = largest_region.bbox
-    
-    if mask is None: 
-        return data[minr:maxr, minc:maxc], breast_mask[minr:maxr, minc:maxc]
+
+    cropped_data = data[minr:maxr, minc:maxc]
+    cropped_mask = breast_mask[minr:maxr, minc:maxc]
+
+    cropped_height = cropped_data.shape[0]
+    cropped_width = cropped_data.shape[1]
+
+    if annotation is not None:
+        ymin = int(annotation["ymin"])
+        ymax = int(annotation["ymax"])
+        xmin = int(annotation["xmin"])
+        xmax = int(annotation["xmax"])
+
+        new_annotation = {
+            "ymin": max(0, ymin - minr),
+            "ymax": max(0, ymax - minr),
+            "xmin": max(0, xmin - minc),
+            "xmax": max(0, xmax - minc),
+            "width": cropped_width,
+            "height": cropped_height
+        }
+
+        if mask is None:
+            return cropped_data, cropped_mask, new_annotation
+        else:
+            cropped_mask_data = mask[minr:maxr, minc:maxc]
+            return cropped_data, cropped_mask, cropped_mask_data, new_annotation
+
     else:
-        return data[minr:maxr, minc:maxc], breast_mask[minr:maxr, minc:maxc], mask[minr:maxr, minc:maxc]
+        if mask is None:
+            return cropped_data, cropped_mask
+        else:
+            return cropped_data, cropped_mask, mask[minr:maxr, minc:maxc]
 
 def minmax_normalization(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))

@@ -5,7 +5,7 @@ import pandas as pd
 folder_txt_path = "/root/letractien/Mammo-VLM/dataset/vindr/folder.txt"
 annotations_csv_path = "/root/letractien/Mammo-VLM/dataset/vindr/finding_annotations.csv"
 output_root = "/root/letractien/Mammo-VLM/dataset/vindr/images"
-cookies = { "sessionid": "qw7wqafjt2rjl1ddlh6b10mx0jn3zxbj"}
+cookies = { "sessionid": "5u95f4mleaw4k564dkitrz9m5i0hfjtd"}
 
 with open(folder_txt_path, "r") as f: 
     folder_list = [line.strip() for line in f.readlines() if line.strip()]

@@ -6,7 +6,6 @@ import numpy as np
 from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
 
-
 save_dir = "out/check_preprocess"
 os.makedirs(save_dir, exist_ok=True)
 
