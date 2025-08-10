@@ -67,4 +67,4 @@ def generate_mammogram_description(
     return description
 
 def generate_request_description():
-    return """请严格标注并框选图像中所有细小、圆形的可疑肿块（Mass）或可疑钙化灶（Suspicious Calcification）区域，输出对应的检测框坐标，以便后续诊断分析。"""
+    return """请严格标注并框选图像中所有细小、圆形的可疑肿块（Mass）或可疑钙化灶（Suspicious Calcification）区域，输出对应的检测框坐标，以便后续诊断分析, 检测框应紧贴所检测到的目标。"""
