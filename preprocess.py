@@ -161,3 +161,35 @@ def draw_bbox_grayscale(img: np.ndarray, bbox: dict, color: float = 255.0, thick
             img_with_bbox[ymin:ymax, xmax - t] = color
 
     return img_with_bbox
+
+
+def pad_image_to_square(image_array):
+
+    original_shape = image_array.shape
+    target_size = max(original_shape[:2])
+    padding_needed = [(0, 0)] * len(original_shape)
+
+    for dim in range(2):
+        padding = (target_size - original_shape[dim]) // 2
+        extra_padding = (target_size - original_shape[dim]) % 2
+        padding_needed[dim] = (padding, padding + extra_padding)
+    
+    padded_img = np.pad(image_array, padding_needed, mode='constant', constant_values=0)
+
+    return padded_img
+
+def pad_image_to_square(image_array):
+
+    original_shape = image_array.shape
+    target_size = max(original_shape[:2])
+    padding_needed = [(0, 0)] * len(original_shape)
+
+    for dim in range(2):
+        padding = (target_size - original_shape[dim]) // 2
+        extra_padding = (target_size - original_shape[dim]) % 2
+        padding_needed[dim] = (padding, padding + extra_padding)
+    
+    padded_img = np.pad(image_array, padding_needed, mode='constant', constant_values=0)
+
+    return padded_img
+
