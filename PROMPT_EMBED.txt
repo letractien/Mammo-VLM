@@ -1,0 +1,10 @@
+- Bright white areas with irregular, branching, and diffuse network-like shapes.
+- Elongated bright streaks intersecting and forming fibrous structures.
+- Often concentrated in the central and upper parts of the breast tissue.
+- Whiter and denser regions compared to the surrounding gray (fatty) tissue.
+- Appear as small bright spots, round or slightly irregular.
+- Vary in size: from very tiny to somewhat larger.
+- Distributed either scattered or clustered.
+- Stand out against the surrounding breast tissue background (fibrous gray texture).
+- Output results only in JSON format: [{"bbox_2d": [xmin, ymin, xmax, ymax], "label": "O"},...]
+- No explanationBBox fits tightly to object

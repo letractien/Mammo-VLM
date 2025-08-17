@@ -5,8 +5,9 @@ from skimage.exposure import equalize_adapthist
 from skimage.morphology import disk, white_tophat, black_tophat
 from skimage.restoration import denoise_nl_means, estimate_sigma
 from skimage import exposure
+from skimage.transform import resize
 
-# def crop(data, mask=None):
+# def crop(data, mask_array=None):
 #     img_blurred = gaussian(data, sigma=10)
 #     thresh = threshold_otsu(img_blurred)
 #     breast_mask = (img_blurred > thresh).astype(np.uint8)
@@ -15,12 +16,12 @@ from skimage import exposure
 #     largest_region = max(regions, key=lambda x: x.area)
 #     minr, minc, maxr, maxc = largest_region.bbox
     
-#     if mask is None: 
+#     if mask_array is None: 
 #         return data[minr:maxr, minc:maxc], breast_mask[minr:maxr, minc:maxc]
 #     else:
-#         return data[minr:maxr, minc:maxc], breast_mask[minr:maxr, minc:maxc], mask[minr:maxr, minc:maxc]
+#         return data[minr:maxr, minc:maxc], breast_mask[minr:maxr, minc:maxc], mask_array[minr:maxr, minc:maxc]
 
-def crop(data, mask=None, annotation=None):
+def crop(data, mask_array=None, annotation=None):
     img_blurred = gaussian(data, sigma=10)
     thresh = threshold_otsu(img_blurred)
     breast_mask = (img_blurred > thresh).astype(np.uint8)
@@ -50,17 +51,78 @@ def crop(data, mask=None, annotation=None):
             "height": cropped_height
         }
 
-        if mask is None:
+        if mask_array is None:
             return cropped_data, cropped_mask, new_annotation
         else:
-            cropped_mask_data = mask[minr:maxr, minc:maxc]
+            cropped_mask_data = mask_array[minr:maxr, minc:maxc]
             return cropped_data, cropped_mask, cropped_mask_data, new_annotation
 
     else:
-        if mask is None:
+        if mask_array is None:
             return cropped_data, cropped_mask
         else:
-            return cropped_data, cropped_mask, mask[minr:maxr, minc:maxc]
+            return cropped_data, cropped_mask, mask_array[minr:maxr, minc:maxc]
+
+def pad_image_to_square(image_array, mask_array=None, annotation=None):
+    original_shape = image_array.shape
+    target_size = max(original_shape[:2])
+    padding_needed = [(0, 0)] * len(original_shape)
+
+    for dim in range(2):
+        padding = (target_size - original_shape[dim]) // 2
+        extra_padding = (target_size - original_shape[dim]) % 2
+        padding_needed[dim] = (padding, padding + extra_padding)
+
+    padded_img = np.pad(image_array, padding_needed, mode='constant', constant_values=0)
+
+    padded_mask = None
+    if mask_array is not None:
+        padded_mask = np.pad(mask_array, padding_needed, mode='constant', constant_values=0)
+
+    new_annotation = None
+    if annotation is not None:
+        new_annotation = annotation.copy()
+        # Dịch bbox theo padding
+        new_annotation["xmin"] += padding_needed[1][0]
+        new_annotation["xmax"] += padding_needed[1][0]
+        new_annotation["ymin"] += padding_needed[0][0]
+        new_annotation["ymax"] += padding_needed[0][0]
+        new_annotation["width"] = target_size
+        new_annotation["height"] = target_size
+
+    return padded_img, padded_mask, new_annotation
+
+def resize_image(image_array, mask_array=None, annotation=None, output_shape=(1024, 1024), interpolation='linear'):
+    if image_array.ndim == 2:
+        target_shape = output_shape[:2]
+    elif image_array.ndim == 3:
+        assert len(output_shape) == 3, "Output shape must be 3-dimensional for 3-dimensional images."
+        target_shape = output_shape
+
+    anti_aliasing = interpolation == 'linear'
+    order = 0 if interpolation == 'nearest' else 1
+
+    resized_image = resize(image_array, target_shape, mode='reflect', anti_aliasing=anti_aliasing, order=order)
+
+    resized_mask = None
+    if mask_array is not None:
+        resized_mask = resize(mask_array, target_shape, mode='reflect', order=0, preserve_range=True).astype(mask_array.dtype)
+
+    new_annotation = None
+    if annotation is not None:
+        h_in, w_in = image_array.shape[:2]
+        h_out, w_out = target_shape[:2]
+        scale_x = w_out / w_in
+        scale_y = h_out / h_in
+        new_annotation = annotation.copy()
+        new_annotation["xmin"] = int(annotation["xmin"] * scale_x)
+        new_annotation["xmax"] = int(annotation["xmax"] * scale_x)
+        new_annotation["ymin"] = int(annotation["ymin"] * scale_y)
+        new_annotation["ymax"] = int(annotation["ymax"] * scale_y)
+        new_annotation["width"] = w_out
+        new_annotation["height"] = h_out
+
+    return resized_image, resized_mask, new_annotation
 
 def minmax_normalization(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
@@ -161,35 +223,3 @@ def draw_bbox_grayscale(img: np.ndarray, bbox: dict, color: float = 255.0, thick
             img_with_bbox[ymin:ymax, xmax - t] = color
 
     return img_with_bbox
-
-
-def pad_image_to_square(image_array):
-
-    original_shape = image_array.shape
-    target_size = max(original_shape[:2])
-    padding_needed = [(0, 0)] * len(original_shape)
-
-    for dim in range(2):
-        padding = (target_size - original_shape[dim]) // 2
-        extra_padding = (target_size - original_shape[dim]) % 2
-        padding_needed[dim] = (padding, padding + extra_padding)
-    
-    padded_img = np.pad(image_array, padding_needed, mode='constant', constant_values=0)
-
-    return padded_img
-
-def pad_image_to_square(image_array):
-
-    original_shape = image_array.shape
-    target_size = max(original_shape[:2])
-    padding_needed = [(0, 0)] * len(original_shape)
-
-    for dim in range(2):
-        padding = (target_size - original_shape[dim]) // 2
-        extra_padding = (target_size - original_shape[dim]) % 2
-        padding_needed[dim] = (padding, padding + extra_padding)
-    
-    padded_img = np.pad(image_array, padding_needed, mode='constant', constant_values=0)
-
-    return padded_img
-

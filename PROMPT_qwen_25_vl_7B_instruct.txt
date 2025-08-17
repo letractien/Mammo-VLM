@@ -1,0 +1,22 @@
+1. **Detect round or closed polygonal masses (MM):**
+   - Identify all masses with the following characteristics:
+     - Shape: Round or closed polygonal.
+     - Border: Clear, smooth, possibly deformed, or with multiple angles.
+
+2. **Detect scattered or bright spot lesions (SC):**
+   - Identify all regions with the following characteristics:
+     - Shape: Round, closed polygonal, irregular, sharp, discrete, or branched.
+     - Other features: Small bright spots, scattered or concentrated.
+
+3. **Output detected box coordinates:**
+   - Strictly prohibited from providing any additional explanation about the results.
+   - Must ensure the bounding box tightly fits the detected object.
+   - Must not miss any object that meets the described criteria.
+   - Must not select any unrelated object or object that does not meet the criteria.
+   - Must output the bounding box coordinates of all detected objects in the required JSON format as follows:
+```json
+[
+    {"bbox_2d": [xmin, ymin, xmax, ymax], "label": "MM"},
+    {"bbox_2d": [xmin, ymin, xmax, ymax], "label": "SC"},
+    ...
+]
